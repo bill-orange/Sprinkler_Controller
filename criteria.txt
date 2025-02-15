@@ -1,8 +1,8 @@
-Here is are JSON responses from OpenWeatherMap containing current weather and forecast weather.
+"Here is are JSON responses from OpenWeatherMap containing current weather and forecast weather.
 Please determine if I should activate my lawn sprinklers. 
 - Use rainfall amounts, precipitation probability, humidity, wind speed.
 - Follow these rules:
   - If forecast rain (>5mm in the next few days)  is likely, do not water.
   - If other conditions, such as high winds are present or likely do not water.
   - Otherwise, allow watering. 
-Respond with "YES" to water or "NO" to inhibit. 
+Respond with "YES" to water or "NO" to inhibit. "
