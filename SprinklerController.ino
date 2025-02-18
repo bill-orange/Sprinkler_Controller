@@ -1,4 +1,4 @@
-/* William E Webb (c) Sprinker Controller Inhibit using OpenWeatherMap and ChatGPT
+/* William E Webb (c) MIT LICENSE Sprinker Controller Inhibit using OpenWeatherMap and ChatGPT
    
    This project uses TFT_eSPI by Bodmer The original starting point for this library was the
    Adafruit_ILI9341 library in January 2015. MIT License
@@ -11,6 +11,7 @@
 02/12/2025 First release - runs and appears to work but without rain, 
            I can not test the flow control.  Support_functions.h has been modified.
 02/17/2025 Added fileInfo to startup.  Added WiFi Multi.
+02/18/2025 Added MIT License
 
 */
 #define USE_LINE_BUFFER  // Enable for faster rendering
