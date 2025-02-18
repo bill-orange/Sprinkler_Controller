@@ -27,3 +27,6 @@ They are not stored in the sketch.  They are downloaded from the GitHub page whe
 as many graphics as you like without using up limited microcontroller memory.  You can change them whenever
 you like without recompiling.  The OpenAI prompt is also stored in the GitHub site instead of in the sketch.
 This allows the prompt to be refined withour recompiling.
+
+This project could be adapted to other applications, like controlling outdoor light or running pool heaters.
+Use at your own risk.
