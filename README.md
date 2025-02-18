@@ -18,7 +18,8 @@ There are lots of instructions on how to do this on YouTube. The microcontroller
 By minor modifications to pin assignments, you should be able to use your choice of hardware.  Be sure to use a 3v relay board.
 ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but it is unlikly to be usable for anyone
 else's implementation of the project. You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. OpenAI costs 
-a small amount of money to run.
+a small amount of money to run.  Please note, this is not a libray. Put the .c and .h files in the same folder 
+as the project folder containing the .ino file.
 
 ![IMG_1593](https://github.com/user-attachments/assets/5f337a6e-7a98-467b-b628-063be0e110a6)
 
