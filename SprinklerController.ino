@@ -8,33 +8,36 @@
    This project uses ChatGPTuino by programming-electronics-acadamy 
    GNU Lesser General Public License v2.1
 
-02/12/2024 First release - runs and appears to work but without rain, 
+02/12/2025 First release - runs and appears to work but without rain, 
            I can not test the flow control.  Support_functions.h has been modified.
+02/17/2025 Added fileInfo to startup.  Added WiFi Multi.
 
 */
-#define USE_LINE_BUFFER                            // Enable for faster rendering
+#define USE_LINE_BUFFER  // Enable for faster rendering
 
-#include <WiFi.h>           // Needed for Version 3 Board Manager
-#include <TFT_eSPI.h>       // Hardware-specific library
+#include <WiFi.h>  // Needed for Version 3 Board Manager
+#include <WiFiMulti.h>
+#include <TFT_eSPI.h>  // Hardware-specific library
 //#include <SPI.h>            // needs testing may not be needed
 TFT_eSPI tft = TFT_eSPI();  // For Display
 
 #include <HTTPClient.h>         // Get Web Data
 #include "support_functions.h"  // Process PNG for TFT display
 //#include <ArduinoJson.h>        // Needed to decode weather JSON
-#include <weathercall.h>        // Get Open WeatherMap data
-#include <ChatGPTuino.h>        // For AI Support
-#include "secrets.h"            //  Just what the name implies plus location info
+#include <weathercall.h>  // Get Open WeatherMap data
+#include <ChatGPTuino.h>  // For AI Support
+#include "secrets.h"      //  Just what the name implies plus location info
 
 SET_LOOP_TASK_STACK_SIZE(12 * 1024);  // needed to handle really long strings
 
 #define RELAY_PIN 5                                // Define the pin connected to the relay
 #define TIME_Between_Weather_Calls (3600000 * 12)  // Every 12 Hours
-String latitude = LAT;                             // 90.0000 to -90.0000 negative for Southern hemisphere
-String longitude = LON;                            // 180.000 to -180.000 negative for West
-String units = Units;                              // or "imperial"
-String language = Language;                        // See notes tab
-String jsonBuffer;                                 // Storage for JSON String test if needed
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+String latitude = LAT;       // 90.0000 to -90.0000 negative for Southern hemisphere
+String longitude = LON;      // 180.000 to -180.000 negative for West
+String units = Units;        // or "imperial"
+String language = Language;  // See notes tab
+String jsonBuffer;           // Storage for JSON String test if needed
 char *AIShortReply = "                                                             ";
 
 const int TOKENS = 174;             // How lengthy a response you want, every token is about 3/4 a word
@@ -46,6 +49,7 @@ Weathercall weather(apiKeyOpenWeather, location);  // Setup fetch
 Weathercall forecast(apiKeyOpenWeather, location, 1);
 
 ChatGPTuino chat{ TOKENS, NUM_MESSAGES };  // Will store and send your most recent messages (up to NUM_MESSAGES)
+WiFiMulti wifiMulti;                       // Constructor for multiple wifi ssid
 
 /*-------------------------------- Setup ------------------------------------*/
 void setup() {
@@ -58,6 +62,7 @@ void setup() {
   tft.begin();
   tft.fillScreen(0);
   tft.setRotation(2);
+  fileInfo();
   WIP();
   pinMode(RELAY_PIN, OUTPUT);
   updateRelay(1);
@@ -71,7 +76,7 @@ void loop() {
   weather.updateStatus(&w);   // Fetches weather
   forecast.updateStatus(&w);  // Fetches forecast
 
-  if ( strstr(w.weather.c_str(), "ain") != NULL || strstr(w.weather1.c_str(), "ain") != NULL || strstr(w.weather2.c_str(), "ain") != NULL) {
+  if (strstr(w.weather.c_str(), "ain") != NULL || strstr(w.weather1.c_str(), "ain") != NULL || strstr(w.weather2.c_str(), "ain") != NULL) {
     consultAINeeded = 0;
     Serial.println("RAIN ............ RAIN ............... RAIN  >>>> No forecast needed");
     rain();
@@ -102,20 +107,41 @@ void loop() {
 
 /*-------------------------------- Connect to the Wifi network ------------------------------------*/
 void connectToWifiNetwork() {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.println("");
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
+  delay(10);
+  WiFi.mode(WIFI_STA);
+  wifiMulti.addAP(ssid_1, password_1);
+  wifiMulti.addAP(ssid_2, password_2);
+
+  // WiFi.scanNetworks will return the number of networks found
+  int n = WiFi.scanNetworks();
+  Serial.println("scan done");
+  if (n == 0) {
+    Serial.println("no networks found");
+  } else {
+    Serial.print(n);
+    Serial.println(" networks found");
+    for (int i = 0; i < n; ++i) {
+      // Print SSID and RSSI for each network found
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(WiFi.SSID(i));
+      Serial.print(" (");
+      Serial.print(WiFi.RSSI(i));
+      Serial.print(")");
+      Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+      delay(10);
+    }
   }
 
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  // Connect to Wi-Fi using wifiMulti (connects to the SSID with strongest connection)
+  Serial.println("Connecting Wifi...");
+  if (wifiMulti.run() == WL_CONNECTED) {
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+  }
 }
 
 /*-------------------------------- Display Rain Graphic ------------------------------------*/
@@ -217,4 +243,21 @@ void updateRelay(int yesNo) {
   } else {
     digitalWrite(RELAY_PIN, LOW);  // Open relay
   }
+}
+
+/*---------------------------- File information  ------------------------------------------*/
+void fileInfo() {  // uesful to figure our what software is running
+
+
+  tft.fillScreen(TFT_BLUE);
+  tft.setTextColor(TFT_WHITE);  // Print to TFT display, White color
+  tft.setTextSize(1);
+  tft.drawString("    AI openWeather Test ", 25, 50);
+  tft.drawString("    Demos AI Prediction", 25, 70);
+  tft.setTextSize(1);
+  tft.drawString(__FILENAME__, 20, 1100);
+  tft.drawString(__DATE__, 20, 140);
+  tft.drawString(__TIME__, 120, 140);
+  delay(6000);
+  tft.fillScreen(TFT_BLACK);
 }
