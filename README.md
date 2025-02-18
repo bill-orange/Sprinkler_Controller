@@ -20,7 +20,8 @@ ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but it is
 elses implementation of the project. You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. OpenAI costs 
 a small amount of money to run.
 
-![IMG_1593](https://github.com/user-attachments/assets/47233484-1f50-40bc-a024-e01cabff9d25)
+![IMG_1593](https://github.com/user-attachments/assets/5f337a6e-7a98-467b-b628-063be0e110a6)
+
 
 There are a couple of interesting innovation in this project. All graphics are AI genereated PNG files.
 They are not stored in the sketch.  They are downloaded from the GitHub page when needed.  You can have 
