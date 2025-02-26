@@ -12,10 +12,15 @@
            I can not test the flow control.  Support_functions.h has been modified.
 02/17/2025 Added fileInfo to startup.  Added WiFi Multi.
 02/18/2025 Added MIT License
+02/19/2025 Added Graphic to show WiFi is connected.
+02/22/2025 Added explaination of decision print to serial
+           Can not print to SD because of pin duplication
+02/25/2025 Improved download speed in support_functions.h revised
+02/26/2025 Clarify rain/sun if statement
 
 */
 #define USE_LINE_BUFFER  // Enable for faster rendering
-
+#define debug true         // eliminates print statements
 #include <WiFi.h>  // Needed for Version 3 Board Manager
 #include <WiFiMulti.h>
 #include <TFT_eSPI.h>  // Hardware-specific library
@@ -59,11 +64,13 @@ void setup() {
   delay(20);
   Serial.print("compiler Version: ");
   Serial.println(__cplusplus);
-  connectToWifiNetwork();
   tft.begin();
   tft.fillScreen(0);
   tft.setRotation(2);
   fileInfo();
+  connectToWifiNetwork();
+  wiFiconnect();
+  delay(3000);
   WIP();
   pinMode(RELAY_PIN, OUTPUT);
   updateRelay(1);
@@ -88,11 +95,12 @@ void loop() {
     Serial.println(tempString);
     Serial.println("*****************************");
 
-    if (strstr(tempString.c_str(), "NO") != NULL) {
+    if ( tempString.indexOf("NO") != -1) {
       sun();
     } else {
       rain();
     }
+    if (debug) Serial.println(AIExplain());
   }
 
   yield();
@@ -169,12 +177,23 @@ void sun() {
   updateRelay(1);
 }
 
-/*-------------------------------- Display Sun Graphic -------------------------------------*/
+/*-------------------------------- Display Error Graphic -------------------------------------*/
 void error() {
   uint32_t t = millis();
 
   setPngPosition(0, 0);
   load_png("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/data/error.png");
+  t = millis() - t;
+  Serial.print(t);
+  Serial.println(" ms to load URL");
+}
+
+/*-------------------------------- Display Connection Graphic -------------------------------------*/
+void wiFiconnect() {
+  uint32_t t = millis();
+
+  setPngPosition(0, 0);
+  load_png("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/data/WiFiConnected.png");
   t = millis() - t;
   Serial.print(t);
   Serial.println(" ms to load URL");
@@ -246,6 +265,20 @@ void updateRelay(int yesNo) {
   }
 }
 
+/*----------------------------------- Send Explaination Prompt to AI ----------------------------------------*/
+String AIExplain() {
+  // Create the structures that hold the retrieved weather
+  String realUserMessage = "Please explain how you arrived at your Yes/No answer. Keep the explaination under 40 words";
+
+  Serial.println(realUserMessage);  // This and the lines below taken from library example
+  int str_len = realUserMessage.length() + 1;
+  char AIPrompt[str_len];
+  realUserMessage.toCharArray(AIPrompt, str_len);
+  GetAIReply(AIPrompt);
+  //Serial.println(GetAIReply(AIPrompt));
+  return String(GetAIReply(AIPrompt));
+}
+
 /*---------------------------- File information  ------------------------------------------*/
 void fileInfo() {  // uesful to figure our what software is running
 
@@ -256,8 +289,8 @@ void fileInfo() {  // uesful to figure our what software is running
   tft.drawString("    AI openWeather Test ", 25, 50);
   tft.drawString("    Demos AI Prediction", 25, 70);
   tft.setTextSize(1);
-  tft.drawString(__FILENAME__, 20, 1100);
-  tft.drawString(__DATE__, 20, 140);
+  tft.drawString(__FILENAME__, 30, 1100);
+  tft.drawString(__DATE__, 30, 140);
   tft.drawString(__TIME__, 120, 140);
   delay(6000);
   tft.fillScreen(TFT_BLACK);
