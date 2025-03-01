@@ -9,15 +9,15 @@ is raining or expected to start raining shortly, watering will be inhibited.  Si
 
 If it is not raining and not forecast to start raining in the very near future, watering may still be inappropriate.
 The OpenWeatherMap data is sent to OpenAI which is asked for a "Yes" or "No" on inhibiting watering.
-If "Yes" watering will be inhibited.
+If "Yes" watering will run.
 
 My hope is that this setup will be more accurate than the approach taken in the existing sprinkler controller.
 
 The project uses a colorful TFT display and a 3v relay board.  Be sure to configure your TFT_eSPI library for your display.
 There are lots of instructions on how to do this on YouTube. The microcontroller is a TTGO T8 v1.7.1.
 By minor modifications to pin assignments, you should be able to use your choice of hardware.  Be sure to use a 3v relay board.
-ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but it is unlikly to be usable for anyone
-else's implementation of the project. You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. OpenAI costs 
+ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but do not use it as-is.  To many errors.
+You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. OpenAI costs 
 a small amount of money to run.  Please note, this is not a libray. Put the .c and .h files in the same folder 
 as the project folder containing the .ino file.
 
