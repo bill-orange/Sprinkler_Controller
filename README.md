@@ -21,8 +21,7 @@ You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. Ope
 a small amount of money to run.  Please note, this is not a libray. Put the .c and .h files in the same folder 
 as the project folder containing the .ino file.
 
-![IMG_1593](https://github.com/user-attachments/assets/5f337a6e-7a98-467b-b628-063be0e110a6)
-
+![IMG_1602](https://github.com/user-attachments/assets/e40e5f5d-cc54-4cad-be74-9623159d1abb)
 
 There are a couple of interesting innovations in this project. All graphics are AI genereated PNG files.
 They are not stored in the sketch.  They are downloaded from the GitHub page when needed.  You can have 
