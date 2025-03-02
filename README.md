@@ -16,7 +16,7 @@ My hope is that this setup will be more accurate than the approach taken in the 
 The project uses a colorful TFT display and a 3v relay board.  Be sure to configure your TFT_eSPI library for your display.
 There are lots of instructions on how to do this on YouTube. The microcontroller is a TTGO T8 v1.7.1.
 By minor modifications to pin assignments, you should be able to use your choice of hardware.  Be sure to use a 3v relay board.
-ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but do not use it as-is.  To many errors.
+ESP32 Dev Boards are not 5v tolerant.  I have included a Fritzing file but it is unliky to work for your part choices.
 You will need OpenAI and OpenWeatherMap API keys.  They are easily optained. OpenAI costs 
 a small amount of money to run.  Please note, this is not a libray. Put the .c and .h files in the same folder 
 as the project folder containing the .ino file.
