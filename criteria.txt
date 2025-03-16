@@ -7,4 +7,4 @@ Please determine if I should activate my lawn sprinklers.
   - Otherwise, allow watering. 
   - If you see the word Rain in either JSON string, do not water. Be sure to read all of the JSON strings.
   - Consider morning temperature.  If it is too cold in the morning, the grass is likely dormant and will not absorb water.
-Respond only with "YES" to inhibit the lawn sprinklers and not water or "NO" to activate sprinklers and water. Do not add any discussion to this structed reply."
+Respond only with "YES" to inhibit the lawn sprinklers and not water or "NO" to activate sprinklers and water. Do not add any discussion to this structured reply."
