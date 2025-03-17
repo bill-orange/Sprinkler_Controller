@@ -24,6 +24,9 @@
 03/02/2025 Minors
 03/02/2025 Minors
 03/07/2025 Minors
+03/12/2025 Added more conditions that will display error message
+03/14/2025 Minors
+03/17/2025 Moved explaination prompt into github
 
 */
 #define USE_LINE_BUFFER  // Enable for faster rendering
@@ -168,8 +171,10 @@ void loop() {
 
     if (tempString.indexOf("NO") != -1) {
       showGraphic("11.png", 1);
-    } else {
+    } else if (tempString.indexOf("YES") != -1) {
       showGraphic("12.png", 0);
+    } else {
+      showGraphic("error.png", 1);
     }
 
     if (debug && consultAINeeded == 1) {
@@ -208,6 +213,7 @@ void connectToWifiNetwork() {
   Serial.println("scan done");
   if (n == 0) {
     Serial.println("no networks found");
+    showGraphic("error.png", 1);
   } else {
     Serial.print(n);
     Serial.println(" networks found");
@@ -232,6 +238,9 @@ void connectToWifiNetwork() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
     showGraphic("WiFiConnected.png", 1);
+  } else {
+    showGraphic("error.png", 1);
+    delay(6000);
   }
 }
 
@@ -244,6 +253,30 @@ String criteria() {
   int httpCode = http.GET();
   if (httpCode != HTTP_CODE_OK) {
     Serial.printf("HTTP ERROR: %d\n", httpCode);
+    showGraphic("error.png", 1);
+    http.end();
+    return "   ";
+  }
+
+  String payload = http.getString();  // Read response into a String
+  http.end();                         // Close connection
+
+  t = millis() - t;
+  Serial.print(t);
+  Serial.println(" ms to load URL");
+  return payload;
+}
+
+/*-------------------------------- Gets Inhibit Explaination from Github -------------------------------------*/
+String explain() {
+  uint32_t t = millis();
+  HTTPClient http;
+  http.begin("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/explain.txt");
+
+  int httpCode = http.GET();
+  if (httpCode != HTTP_CODE_OK) {
+    Serial.printf("HTTP ERROR: %d\n", httpCode);
+    showGraphic("error.png", 1);
     http.end();
     return "   ";
   }
@@ -294,7 +327,7 @@ void updateRelay(int yesNo) {
 /*----------------------------------- Send Explaination Prompt to AI ----------------------------------------*/
 String AIExplain() {
   // Create the structures that hold the retrieved weather
-  String realUserMessage = "Please explain how you arrived at your Yes/No answer. Keep the explaination under 40 words.  Preface your reply with the time and date taken form the current conditions JSON String. For this reply you are not bound by the Yes/No restriction";
+  String realUserMessage = explain();
 
   Serial.println(realUserMessage);  // This and the lines below taken from library example
   int str_len = realUserMessage.length() + 1;
@@ -312,12 +345,12 @@ void fileInfo() {  // uesful to figure our what software is running
   tft.fillScreen(TFT_BLUE);
   tft.setTextColor(TFT_WHITE);  // Print to TFT display, White color
   tft.setTextSize(1);
-  tft.drawString("    AI openWeather Test ", 25, 50);
-  tft.drawString("    Demos AI Prediction", 25, 70);
+  tft.drawString("    Sprinkler Inhibitor ", 30, 50);
+  tft.drawString("    AI Weather Prediction", 30, 70);
   tft.setTextSize(1);
-  tft.drawString(__FILENAME__, 30, 1100);
-  tft.drawString(__DATE__, 30, 140);
-  tft.drawString(__TIME__, 120, 140);
+  tft.drawString(__FILENAME__, 35, 1100);
+  tft.drawString(__DATE__, 35, 140);
+  tft.drawString(__TIME__, 125, 140);
   delay(3000);
 }
 
