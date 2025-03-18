@@ -31,3 +31,5 @@ This allows the prompt to be refined without recompiling.
 
 This project could be adapted to other applications, like controlling outdoor lights or running pool heaters.
 Use at your own risk.
+
+03/18/2025 OTA version added
