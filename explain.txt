@@ -1,1 +1,3 @@
-"For this reply you are not bound by the Yes/No restriction.  Please explain how you arrived at your Yes/No answer. Keep the explaination under 40 words.  Preface your reply with the time and date taken from the current conditions JSON String. "
+"For this reply you are not bound by the Yes/No restriction.  
+Please explain how you arrived at your Yes/No answer. Keep the explaination under 40 words.  
+Preface your reply with the time and date taken from the current conditions JSON String. "
