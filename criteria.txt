@@ -1,7 +1,7 @@
 "Here are JSON responses from OpenWeatherMap with current and forecast weather. Please determine whether to activate my lawn sprinklers by analyzing rainfall amounts, precipitation probability, humidity, wind speed, and morning temperature."
 If precipitation > 2mm in the next 48 hours is forecast,reply "YES."
 If adverse conditions, such as high winds > than 8 MPH or very low morning temperatures (indicating dormant grass), are detected, reply with exactly "YES", otherwise,reply exactly with "NO."
-If the word "Rain" appears in either JSON string, respond "YES."
+If the word "Rain" appears in either JSON string, reply exactly "YES."
 Reply Format:
 First: Provide a "YES" or "NO" based on your analysis.
 Second: (Only if explanation is requested later) Explain your reasoning using weather conditions from both JSONs."
