@@ -1,10 +1,13 @@
-"Explain the YES/NO decision based on the JSON data. Use relevant weather conditions like rainfall, precipitation probability, wind speed, and temperature. Preface with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
+"Explain the YES/NO decision by identifying the specific criteria that triggered the outcome. Clearly state the deciding factor(s) and reference the relevant values from the JSON data.
+
+Preface your reply with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
 Reply format example:
-Decision made based on:
-- Rainfall forecast: [value] mm
-- Wind speed: [value] mph
-- Morning temperature: [value] °F
-Outcome: Sprinkler [activated/inhibited].
-
-Keep the explanation concise (under 40 words)."
+Time: [timestamp]
+Decision: Sprinkler [activated/inhibited] based on:
+- Factor: [specific factor(s) driving the decision, e.g., "Rainfall forecast exceeded 2mm" or "Wind speed was too high"]
+- Supporting Data: 
+  - Rainfall forecast: [value] mm
+  - Wind speed: [value] mph
+  - Morning temperature: [value] °C
+"
