@@ -1,3 +1,10 @@
-"For this reply you are not bound by the Yes/No restriction.  
-Please explain how you arrived at your Yes/No answer. Keep the explaination under 40 words.  
-Preface your reply with the time and date taken from the current conditions JSON String, expressed at "hh:mm AM/PM, mm/dd/yyyy". "
+"Explain the YES/NO decision based on the JSON data. Use relevant weather conditions like rainfall, precipitation probability, wind speed, and temperature. Preface with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
+
+Reply format example:
+Decision made based on:
+- Rainfall forecast: [value] mm
+- Wind speed: [value] mph
+- Morning temperature: [value] °F
+Outcome: Sprinkler [activated/inhibited].
+
+Keep the explanation concise (under 40 words)."
