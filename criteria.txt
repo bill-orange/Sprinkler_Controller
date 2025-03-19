@@ -1,11 +1,8 @@
-"Here are JSON responses from OpenWeatherMap containing current weather and forecast weather.
-Please determine if I should activate my lawn sprinklers. 
-- Use rainfall amounts, precipitation probability, humidity, wind speed.
-- Follow these rules:
-  - If forecast rain (>2mm in the next few days)  is likely, do not water.
-  - If other conditions, such as high winds are present or likely. do not water.
-  - Otherwise, allow watering. 
-  - If you see the word Rain in either JSON string, do not water. Be sure to read all of the JSON strings.
-  - Consider morning temperature.  If it is too cold in the morning, the grass is likely dormant and will not absorb water.
-Respond only with "YES" to inhibit the lawn sprinklers and not water or "NO" to activate sprinklers and water. 
-Do not add any discussion to this structured reply, unless I request it later."
+"Here are JSON responses from OpenWeatherMap with current and forecast weather. Please determine whether to activate my lawn sprinklers by analyzing rainfall amounts, precipitation probability, humidity, wind speed, and morning temperature."
+If forecast rain is likely (>2mm in the next few days), respond "YES."
+If adverse conditions, such as high winds or very low morning temperatures (indicating dormant grass), are detected, respond "YES."
+Otherwise, respond "NO."
+If the word "Rain" appears in either JSON string, respond "YES."
+Reply Format:
+First: Provide a "YES" or "NO" based on your analysis.
+Second: (Only if explanation is requested later) Explain your reasoning using weather conditions from both JSONs."
