@@ -1,15 +1,16 @@
-"Explain the YES/NO decision by identifying the specific criteria that triggered the outcome. Clearly state the deciding factor(s) and reference the relevant values from the JSON data.
-Base this explanation on the decision (YES/NO) made in the first prompt. Do not reinterpret or change the original decision. If unsure, restate the decision exactly as "YES" or "NO" from the first prompt's output.
+Use the prior JSON data to explain this decision. Do not reinterpret or change the original decision. Ensure the explanation explicitly references the deciding factor(s) and relevant data values from the JSON.
 
-Preface your reply with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
+Preface your response with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
-Reply format example:
+Reply format:
 Time: [timestamp]
-Decision: Sprinkler [activated/inhibited] based on:
-- Factor: [specific factor(s) driving the decision, e.g., "Rainfall forecast exceeded 2mm" or "Wind speed was too high"]
-- Supporting Data: 
+Decision (from first prompt): Sprinkler [YES/NO].
+Reason(s): Clearly state the specific condition(s) that triggered the decision. List all relevant data points, including:
   - Rainfall forecast: [value] mm
   - Wind speed: [value] mph
   - Morning temperature: [value] °C
-Add a final "Confidence" line to the explanation:
-- Confidence: [High/Medium/Low based on clarity of conditions in the JSON data.]"
+  - Precipitation probability: [value] %
+If the decision is unclear, explicitly state why the data supports the original decision. Avoid adding or inferring details not present in the JSON.
+
+Add a final line indicating confidence in the decision:
+Confidence: [High/Medium/Low based on clarity of the data and conditions.]
