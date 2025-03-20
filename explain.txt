@@ -1,4 +1,5 @@
 "Explain the YES/NO decision by identifying the specific criteria that triggered the outcome. Clearly state the deciding factor(s) and reference the relevant values from the JSON data.
+Base this explanation on the decision (YES/NO) made in the first prompt. Do not reinterpret or change the original decision. If unsure, restate the decision exactly as "YES" or "NO" from the first prompt's output.
 
 Preface your reply with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
