@@ -10,4 +10,5 @@ Decision: Sprinkler [activated/inhibited] based on:
   - Rainfall forecast: [value] mm
   - Wind speed: [value] mph
   - Morning temperature: [value] °C
-"
+Add a final "Confidence" line to the explanation:
+- Confidence: [High/Medium/Low based on clarity of conditions in the JSON data.]"
