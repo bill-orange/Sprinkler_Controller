@@ -27,7 +27,9 @@
 03/12/2025 Added more conditions that will display error message
 03/14/2025 Minors
 03/17/2025 Moved explaination prompt into github Started OTA work
-03/18/2025 OTA and posting of last message added,. Compile with Minimal SPIFFS
+03/18/2025 OTA and posting of last message added. Compile with Minimal SPIFFS
+03/22/2025 Turn off green LED and blink it on after AI explain,
+           Minors
 
 */
 #define USE_LINE_BUFFER  // Enable for faster rendering
@@ -159,6 +161,7 @@ void setup() {
     }
   }
   //showGraphic("WIP.png", 1);
+  digitalWrite(TFT_BL, LOW);  // Green LED off
   showGraphic("wait_for_it.png", 1);
   configureServer();  // Setup the server route
   server.begin();     // Start the server
@@ -180,14 +183,26 @@ void loop() {
   ElegantOTA.loop();
 
   if (firstTime == 1) {
-    main();
-    firstTime = 0;
+    if (main() == 1) {  // Run main after TIME_Between_Weather_Calls and recycle on error
+      showGraphic("error.png", 1);
+      firstTime = 1;
+      yield();
+    } else {
+      firstTime = 0;
+    }
   }
 
   // Check if 12 hours have passed
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= TIME_Between_Weather_Calls) {
     previousMillis = currentMillis;
+
+    WiFi.disconnect();  // Re-establish network connection, just to be shure
+    delay(2000);
+    connectToWifiNetwork();
+    delay(2000);
+
+    //ESP.restart();      // Restart the ESP32
 
     if (main() == 1) {  // Run main after TIME_Between_Weather_Calls and recycle on error
       showGraphic("error.png", 1);
@@ -249,7 +264,7 @@ int main() {
 }
 
 /*-------------------------------- Connect to the Wifi network ------------------------------------*/
-void connectToWifiNetwork() {
+void connectToWifiNetwork() {  // Boilerplate from example (mostly)
 
   delay(10);
   WiFi.mode(WIFI_STA);
@@ -285,15 +300,17 @@ void connectToWifiNetwork() {
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    WiFi.setAutoReconnect(true);  // Reconnect if disconnected
+    WiFi.persistent(true);        // Reconnect if disconnected
     showGraphic("WiFiConnected.png", 1);
-  } else {
+  } else {  // Handle error
     showGraphic("error.png", 1);
     delay(6000);
   }
 }
 
 /*-------------------------------- Gets Inhibit Criteria from Github -------------------------------------*/
-String criteria() {
+String criteria() {  // Mostly from example
   uint32_t t = millis();
   HTTPClient http;
   http.begin("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/criteria.txt");
@@ -316,7 +333,7 @@ String criteria() {
 }
 
 /*-------------------------------- Gets Inhibit Explaination from Github -------------------------------------*/
-String explain() {
+String explain() {  // Written by AI
   uint32_t t = millis();
   HTTPClient http;
   http.begin("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/explain.txt");
@@ -382,7 +399,9 @@ String AIExplain() {
   char AIPrompt[str_len];
   realUserMessage.toCharArray(AIPrompt, str_len);
   GetAIReply(AIPrompt);
-  //Serial.println(GetAIReply(AIPrompt));
+  digitalWrite(TFT_BL, HIGH);      // Green LED on, Bink to indicate explaination is ready
+  delay(2000);
+  digitalWrite(TFT_BL, LOW);       // Green LED off
   return String(GetAIReply(AIPrompt));
 }
 
@@ -393,7 +412,7 @@ void fileInfo() {  // uesful to figure our what software is running
   tft.fillScreen(TFT_BLUE);
   tft.setTextColor(TFT_WHITE);  // Print to TFT display, White color
   tft.setTextSize(1);
-  tft.drawString("    Sprinkler Inhibitor with OTA", 3, 60);
+  tft.drawString("    Sprinkler Inhibitor with OTA", 8, 60);
   tft.drawString("    AI Weather Prediction", 30, 70);
   tft.setTextSize(1);
   tft.drawString(__FILENAME__, 35, 1100);
