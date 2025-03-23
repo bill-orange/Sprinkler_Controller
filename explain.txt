@@ -2,6 +2,16 @@ Using the prior JSON data, explain the decision (YES/NO) made earlier. Do not re
 
 Preface your response with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
+Reply format:
+Time: [timestamp]
+Decision (from first prompt): [YES/NO]
+Reason(s): State the specific condition(s) that triggered the decision. Use relevant data from the JSON, including:
+  - Rainfall forecast: [value] mm
+  - Wind speed: [value] mph
+  - Morning temperature: [value] °C
+  - Precipitation probability: [value] %
+Confidence: [High/Medium/Low based on clarity of the data and conditions.]
+
 Additional instructions:
 - Do not restate this prompt in your reply.
 - Focus on explaining the reasoning using only the JSON data provided.
