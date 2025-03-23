@@ -1,15 +1,18 @@
-Use the prior JSON data to explain this decision. Do not reinterpret or change the original decision. Ensure the explanation explicitly references the deciding factor(s) and relevant data values from the JSON.
+Using the prior JSON data, explain the decision (YES/NO) made earlier. Do not reinterpret or change the original decision. Your explanation must reference the deciding factor(s) and explicitly tie them to relevant JSON data values.
 
 Preface your response with the timestamp in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
 Reply format:
 Time: [timestamp]
 Decision (from first prompt): [YES/NO]
-Reason(s): Clearly state the specific condition(s) that triggered the decision. List all relevant data points, including:
+Reason(s): State the specific condition(s) that triggered the decision. Use relevant data from the JSON, including:
+  - Rainfall forecast: [value] mm
+  - Wind speed: [value] mph
+  - Morning temperature: [value] °C
+  - Precipitation probability: [value] %
 Confidence: [High/Medium/Low based on clarity of the data and conditions.]
 
 Additional instructions:
 - Do not restate this prompt in your reply.
-- Ensure your reasoning is directly tied to the decision made in the first prompt.
-- If no specific condition is met but the decision aligns with thresholds, explain this explicitly.
-- Avoid including information not present in the JSON data.
+- Focus on explaining the reasoning using only the JSON data provided.
+- If no specific condition triggered the decision, explain why the data supports the result regardless.
