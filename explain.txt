@@ -1,9 +1,11 @@
-Use the prior JSON data to explain this decision. Do not reinterpret or change the original decision. Ensure the explanation explicitly references the deciding factor(s) and relevant data values from the JSON.
+Do not restate this prompt in your reply. Focus on analyzing the decision (YES/NO) and relevant JSON data.
+Use the decision (YES/NO) from the first prompt and the provided JSON data to craft your explanation. Do not modify or reinterpret the decision.. 
+Ensure the explanation explicitly references the deciding factor(s) and relevant data values from the JSON.
 Remember, in the prior decision "NO" means do not inhibit and allow watering.  A "YES" ment to inhibit watering.
 Preface your response with the time taken from the current conditions JSON in this format: "hh:mm AM/PM, mm/dd/yyyy."
 
 Reply format:
-Time: [timestamp]
+Time: [hh:mm AM/PM, mm/dd/yyyy]
 Decision (from first prompt): Sprinkler [YES/NO].
 Reason(s): Clearly state the specific condition(s) that triggered the decision. List all relevant data points, including:
   - Rainfall forecast: [value] mm
