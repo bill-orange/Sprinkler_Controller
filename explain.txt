@@ -16,3 +16,4 @@ Additional instructions:
 - Do not restate this prompt in your reply.
 - Focus on explaining the reasoning using only the JSON data provided.
 - If no specific condition triggered the decision, explain why the data supports the result regardless.
+- Limit response to 60 words or less.
