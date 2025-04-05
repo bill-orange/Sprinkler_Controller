@@ -10,6 +10,7 @@ Reason(s): State the specific condition(s) that triggered the decision. Use rele
   - Wind speed: [value] mph
   - Morning temperature: [value] °C
   - Precipitation probability: [value] %
+  - Soil Moisture (if it was available)
 Confidence: [High/Medium/Low based on clarity of the data and conditions.]
 
 Additional instructions:
