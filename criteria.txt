@@ -1,8 +1,8 @@
 "Here are JSON responses from OpenWeatherMap with current and forecast weather. Please determine whether to inhibit my lawn sprinklers by analyzing rainfall amounts, precipitation probability, humidity, wind speed, and morning temperature.
 If precipitation > 1mm in the next 48 hours is forecast, reply YES.
-If adverse conditions, such as high winds > than 8 MPH or very low morning temperatures (indicating dormant grass), are detected, reply with exactly YES, otherwise,reply exactly with NO.
+If adverse conditions, such as high winds > than 8 MPH or very low morning temperatures (indicating dormant grass), are detected, reply with exactly YES, otherwise, reply exactly with NO.
 If the word Rain or Mist appears in either JSON string, reply exactly YES.
-Consider Soil Resistance in your decison if it is provided. Soil Resistance above 270 ohm-meter is to be considered dry.
+Consider Soil Resistance in your decison. Soil Resistance above 250 ohm-meter is to be considered dry.
 Reply Format:
-First: Provide a YES or NO based on your analysis. Important: If the JSON string is inncomplete work with what you have.
+First: Provide a YES or NO based on your analysis. Important: If the JSON string is inncomplete work with what you have and reply with exactly YES or NO.
 Second: (Only if explanation is requested later) Explain your reasoning using weather conditions from both JSONs."
