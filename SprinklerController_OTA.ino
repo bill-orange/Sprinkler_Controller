@@ -30,11 +30,19 @@
 03/18/2025 OTA and posting of last message added. Compile with Minimal SPIFFS
 03/22/2025 Turn off green LED and blink it on after AI explain,
            Minors
+03/26/2025 Forked for addding soil resistance -- Mostly UNTESTED
+04/03/2025 Impoved Web Page - Testing
+04/04/2025 Change Scaling to float - Still Testing
+04/05/2025 Simplified and corrected server.on & lengthened timeout in support_function.h
+04/07/2025 Added confused AI png file, Added tempString to web report - UNTESTED
+04/10/2025 fixed variable names and scope errors
+04/12/2024 Made String storage area a bit larger and compiled with new JSON library
+04/14/2025 Greatly increased timouts on HTTP incuding within weathercall library.
+04/17/2025 Tokens increased and minors
 
 */
-#define USE_LINE_BUFFER  // Enable for faster rendering
-#define debug true       // eliminates print statements
-#include <Arduino.h>
+//#define USE_LINE_BUFFER     // Enable for faster rendering
+#define debug true          // eliminates print statements
 #include <WiFi.h>           // Needed for Version 3 Board Manager
 #include <WiFiMulti.h>      // Needed for more than one possible SSDI
 #include <TFT_eSPI.h>       // Hardware-specific library
@@ -49,23 +57,42 @@ TFT_eSPI tft = TFT_eSPI();  // For Display
 #include "support_functions.h"  // Process PNG for TFT display
 #include <weathercall.h>        // Get Open WeatherMap data
 #include <ChatGPTuino.h>        // For AI Support
+#include <CRC8.h>               // CRC8 library
+#include <CRC.h>                // CRC library
 #include "secrets.h"            //  Just what the name implies plus location info
 
 SPIClass hspi(HSPI);  // Start SPI instance
 
-SET_LOOP_TASK_STACK_SIZE(12 * 1024);  // needed to handle really long strings
+SET_LOOP_TASK_STACK_SIZE(14 * 1024);  // needed to handle really long strings
 
+#define DISPLAYBAUD 115200                         // set for LoRa communication/#define DISPLAYBAUD 115200
 #define RELAY_PIN 5                                // Define the pin connected to the relay
+#define LED_PIN 21                                 // only likely correct for T8 board
+#define MYPORT_TX 22                               // Transmit pin for serial
+#define MYPORT_RX 27                               // Receive pin for serial
+#define ADDRESS 2                                  // Address of receiving LoRa.  Must be in same Network
 #define TIME_Between_Weather_Calls (3600000 * 12)  // Every 12 Hours
-#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+//#define TIME_Between_Weather_Calls (3600000 * 1)  // Every 1 Hour -- For Testing Only!
+//#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 
-String latitude = LAT;       // 90.0000 to -90.0000 negative for Southern hemisphere
-String longitude = LON;      // 180.000 to -180.000 negative for West
-String units = Units;        // or "imperial"
-String language = Language;  // See notes tab
-String jsonBuffer;           // Storage for JSON String test, if needed
-String tempString2 = "   ";
+String latitude = LAT;               // 90.0000 to -90.0000 negative for Southern hemisphere
+String longitude = LON;              // 180.000 to -180.000 negative for West
+String units = Units;                // or "imperial"
+String language = Language;          // See notes tab
+String jsonBuffer;                   // Storage for JSON String test, if needed
+String tempString2 = " pending   ";  // The explaination of Yes/No reply
+String tempString = " pending   ";   // The binary Yes/No reply
+String incomingstring = "void";      // Unparsed LoRa message
+String message = "unknown";          // Web message
+String partialRealUserMessage;
+String soilMessage = "200";             // Data from soil moisture transmitter
+String signal_st = "void";              // Signal strenght in dB for some reason the word signal
+                                        // is reserved in the ESP32 compiler
+String sn = "00";                       // Signal-to-Noise Ratio
+String lora_trans_prefix = "AT+SEND=";  // LoRa prefix send without CR/LF
+
 char *AIShortReply = "                                                          ";  // AI Reply storage
+
 
 // REASSIGN_PINS for uSD
 int sck = 14;
@@ -82,7 +109,7 @@ int cs = 13;
 #define TFT_RST   4  // Reset pin (could connect to RST pin)
 */
 
-const int TOKENS = 174;             // How lengthy a response you want, every token is about 3/4 a word
+const int TOKENS = 220;             // How lengthy a response you want, every token is about 3/4 a word
 const int NUM_MESSAGES = 30;        // Another budget limit
 const char *model = "gpt-4o-mini";  // OpenAI Model being used
 //const char *model = "gpt-4o";     // OpenAI Model being used
@@ -101,6 +128,8 @@ Weathercall forecast(apiKeyOpenWeather, location, 1);
 ChatGPTuino chat{ TOKENS, NUM_MESSAGES };  // Will store and send your most recent messages (up to NUM_MESSAGES)
 WiFiMulti wifiMulti;                       // Constructor for multiple wifi ssid
 WebServer server(80);                      // OTA web server instance
+CRC8 crc;                                  // Instance of CRC calculator
+
 
 /*-------------------------------- Display Graphics ----------------------------------------*/
 void showGraphic(String(image), int(relayState)) {
@@ -121,10 +150,13 @@ void showGraphic(String(image), int(relayState)) {
 void setup() {
 
   Serial.begin(115200);
-  delay(20);
+  Serial2.begin(DISPLAYBAUD, SERIAL_8N1, MYPORT_RX, MYPORT_TX);
+  delay(3000);
+  Serial.println("Setup Running.......");
   Serial.print("compiler Version: ");
   Serial.println(__cplusplus);
   pinMode(RELAY_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);  // Blink LED on data received
   updateRelay(1);
   tft.begin();
   tft.fillScreen(0);
@@ -174,6 +206,29 @@ void setup() {
 
   server.begin();
   Serial.println("HTTP server started");
+
+  String incomingstring_check = " ";  // Keep the incoming checksone string local
+
+  sleepMode(0);  // Want the transmitting LoRA to be awake
+  delay(2000);
+
+  Serial2.println("AT+RESET");
+  delay(2000);
+  Serial2.println("AT");
+  do {
+
+
+    if (Serial2.available()) {
+      incomingstring_check = Serial2.readString();
+    }
+
+  } while (incomingstring_check.indexOf("+OK") == -1);  // Confusing.. This is a double negative
+
+  Serial.print("Test before startup: ");
+  Serial.println(incomingstring_check);
+
+  Serial.println("------------------------------------------------------------------------");
+  Serial.println(" Setup Complete ................ Getting Data");
 }
 
 /*------------------------------------------- Loop -----------------------------------------------*/
@@ -181,8 +236,10 @@ void loop() {
 
   server.handleClient();
   ElegantOTA.loop();
+  getSoilMoisture();
 
   if (firstTime == 1) {
+
     if (main() == 1) {  // Run main after TIME_Between_Weather_Calls and recycle on error
       showGraphic("error.png", 1);
       firstTime = 1;
@@ -227,8 +284,9 @@ int main() {
     showGraphic("12.png", 0);
   }
   if (consultAINeeded == 1) {
+    yield();
     showGraphic("AI_computer_eye.png", 1);
-    String tempString = AIForecast();
+    tempString = AIForecast();
     Serial.println("*****************************");
     Serial.println(tempString);
     Serial.println("*****************************");
@@ -238,15 +296,13 @@ int main() {
     } else if (tempString.indexOf("YES") != -1) {
       showGraphic("12.png", 0);
     } else {
-      showGraphic("error.png", 1);
+      showGraphic("confused_AI.png", 1);
     }
 
     if (debug && consultAINeeded == 1) {
       tempString2 = AIExplain();
-      server.on("/", [tempString2]() {  // Capture tempString2 by value
-        String message = "This is Sprinkler Controller. use /update for UPDATE \n\n" + tempString2;
-        server.send(200, "text/plain", message);
-      });
+      //configureServer();
+
       Serial.println(tempString2);
       const char *cstr = tempString2.c_str();
       appendFile(SD, filename, cstr);
@@ -259,6 +315,7 @@ int main() {
   if (w.current_Temp == 0 || w.current_Temp1 == 0) {
     error = 1;
   }
+  configureServer();
   yield();
   return error;
 }
@@ -313,6 +370,7 @@ void connectToWifiNetwork() {  // Boilerplate from example (mostly)
 String criteria() {  // Mostly from example
   uint32_t t = millis();
   HTTPClient http;
+  http.setTimeout(120000);
   http.begin("https://raw.githubusercontent.com/bill-orange/Sprinkler_Controller/master/criteria.txt");
 
   int httpCode = http.GET();
@@ -329,6 +387,7 @@ String criteria() {  // Mostly from example
   t = millis() - t;
   Serial.print(t);
   Serial.println(" ms to load URL");
+  yield();
   return payload;
 }
 
@@ -352,6 +411,7 @@ String explain() {  // Written by AI
   t = millis() - t;
   Serial.print(t);
   Serial.println(" ms to load URL");
+  yield();
   return payload;
 }
 
@@ -359,10 +419,19 @@ String explain() {  // Written by AI
 String AIForecast() {
   // Create the structures that hold the retrieved weather
   String realUserMessage = String(criteria())
+                           + " Soil resistivity is: " + soilMessage + " Ohm-Meter\n"
+                           + "Future forecast is provided in this JSON String\n"
                            + String(forecast.getResponse().c_str())
-                           + " Future forecast weather is provided in this JSON String"
+                           + " Current  weather is provided in this JSON String\n"
                            + String(weather.getResponse().c_str());  // User message to ChatGPT
 
+  partialRealUserMessage = String(criteria())
+                           + " Current weather is provided in this JSON String (redacted)\n"
+                           + " Future forecast weather is provided in this JSON String (redacted)\n"
+                           + " Soil resistance given to AI is: " + soilMessage + " Ohm-Meter.";
+
+
+  // partialRealUserMessage = realUserMessage;
 
   Serial.println(realUserMessage);  // This and the lines below taken from library example
   int str_len = realUserMessage.length() + 1;
@@ -370,6 +439,7 @@ String AIForecast() {
   realUserMessage.toCharArray(AIPrompt, str_len);
   GetAIReply(AIPrompt);
   //Serial.println(GetAIReply(AIPrompt));
+  yield();
   return String(GetAIReply(AIPrompt));
 }
 
@@ -399,9 +469,9 @@ String AIExplain() {
   char AIPrompt[str_len];
   realUserMessage.toCharArray(AIPrompt, str_len);
   GetAIReply(AIPrompt);
-  digitalWrite(TFT_BL, HIGH);      // Green LED on, Bink to indicate explaination is ready
+  digitalWrite(TFT_BL, HIGH);  // Green LED on, Bink to indicate explaination is ready
   delay(2000);
-  digitalWrite(TFT_BL, LOW);       // Green LED off
+  digitalWrite(TFT_BL, LOW);  // Green LED off
   return String(GetAIReply(AIPrompt));
 }
 
@@ -465,10 +535,131 @@ void onOTAEnd(bool success) {
 
 /*----------------------------Send message to web page----------------------------------------*/
 void configureServer() {
-  server.on("/", [&tempString2]() {  // Capture by reference
-    String message = "Hi! This is Sprinkler Controller. use /update for UPDATE \n\n Latest reply: \n\n" + tempString2;
+  server.on("/", [&tempString2, &soilMessage, &tempString, &partialRealUserMessage]() {  // Capture by reference
+    String message = "Hi! This is Sprinkler Controller. use /update for UPDATE \n\n Current Soil Resistance: "
+                     + soilMessage
+                     + " \n\n Latest Yes/No Decision: "
+                     + tempString
+                     + " \n\n Latest prompt: \n\n"
+                     + partialRealUserMessage
+                     + "\n\n Latest reply: \n\n"
+                     + tempString2;
+
     server.send(200, "text/plain", message);
   });
+  yield();
 }
 
-/*--------------------------------------------------------------------------------------------------*/
+/*------------------------------- Parse Message ------------------------------------*/
+void parseMessage() {
+
+  // Very standard C++ parser for comma delimited String
+
+  int first = incomingstring.indexOf(",");
+  int second = incomingstring.indexOf(",", first + 1);
+  int third = incomingstring.indexOf(",", second + 1);
+  int fourth = incomingstring.indexOf(",", third + 1);
+  int fifth = incomingstring.indexOf("\r", fourth + 1);
+
+  soilMessage = incomingstring.substring(second + 1, third);
+  signal_st = incomingstring.substring(third + 1, fourth);
+  sn = incomingstring.substring(fourth + 1, fifth);
+}
+
+/*---------------------------------------------- CRC CAlculator ------------------------------------------------*/
+
+uint8_t CRCCalculator(String message) {
+
+  // CRC8 calculator see libraries examples on Github
+
+  crc.reset();
+  char char_array[message.length() + 1];
+  message.toCharArray(char_array, message.length());
+  crc.add((uint8_t *)char_array, message.length());
+  return crc.calc();
+}
+
+/*---------------------------------------------- Data Transmitter ------------------------------------------------*/
+
+void DataTransmitter(String message) {
+
+  uint8_t crc = CRCCalculator(message);
+
+  String CRCMessage = String(crc);
+
+  Serial2.print(lora_trans_prefix);
+  Serial2.print(ADDRESS);
+  Serial2.print(",");
+  Serial2.print(CRCMessage.length());
+  Serial2.print(",");
+  Serial2.println(CRCMessage);
+
+  String incomingstring_check = " ";  // Keep the incoming checksone string local
+
+  do {
+    if (Serial2.available()) {
+      incomingstring_check = Serial2.readString();
+    }
+
+  } while (incomingstring_check.indexOf("+OK") == -1);  // Confusing.. This is a double negative
+
+  Serial.println("  ");
+  Serial.print("Test before Transmit: ");
+  Serial.println(incomingstring_check);
+
+  yield();  // Don't want a timeout
+}
+
+
+/*-------------------------------------- RYL988 Sleep Mode ---------------------------------------------*/
+
+void sleepMode(int snooze) {
+
+  if (snooze == 0) {
+    DataTransmitter("AT+MODE=0");
+    Serial.println("                      REL988 out of sleep");
+    delay(2000);
+  } else {
+    DataTransmitter("AT+MODE=1");
+    Serial.println("                      REL988 in sleep");
+    delay(2000);
+  }
+}
+
+/*----------------------------------- Get the Soil Moisture -----------------------------------------*/
+
+void getSoilMoisture() {
+
+  digitalWrite(LED_PIN, LOW);  // turn the LED OFF waiting for data
+
+  //sleepMode(0);
+  //delay(2000);
+  if (Serial2.available()) {
+    incomingstring = Serial2.readString();
+
+    if (incomingstring.indexOf("+OK") == -1) {  // Strip out all the +OK
+      digitalWrite(LED_PIN, HIGH);              // turn the LED  ON processing data
+      parseMessage();                           // break unformation in incoming string in to useful Strings
+      DataTransmitter(soilMessage);             // Now that we have the message we can transmitt the CRC
+
+      float soilMessagef = soilMessage.toFloat();
+      soilMessagef = soilMessagef / 3.5;
+      //integerSoilMessage = constrain(integerSoilMessage, 500, 2000);
+      //integerSoilMessage = map(integerMessage, 500, 2000, 175, 1000);
+      soilMessage = String(soilMessagef);
+      Serial.print("                                    Soil Resistance 0-1000 ohms-meter: ");
+      Serial.println(soilMessage);
+      Serial.print("                                    Signal_strength: ");
+      Serial.print(signal_st);
+      Serial.print("dB");
+
+    } else {
+      Serial.print("rejected message: ");
+      Serial.println(incomingstring);
+    }
+  }
+  //sleep(1);
+  //Serial.print(".");
+  yield();  // Housekeeping
+}
+/*-----------------------------------------------------------------------------------*/
